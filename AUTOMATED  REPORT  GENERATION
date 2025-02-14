@@ -1,0 +1,87 @@
+import pandas as pd
+from fpdf import FPDF
+
+# Function to read data from CSV file
+def read_data(file_path):
+    # Read the CSV file using pandas
+    data = pd.read_csv(file_path)
+    return data
+
+# Function to analyze the data (calculating total sales)
+def analyze_data(data):
+    # Adding a new column for Total Sales (Quantity * Price)
+    data['Total Sales'] = data['Quantity'] * data['Price']
+    
+    # Calculate total sales for the entire dataset
+    total_sales = data['Total Sales'].sum()
+    
+    # Calculate the average price
+    average_price = data['Price'].mean()
+    
+    # Return the analyzed data and summary statistics
+    return data, total_sales, average_price
+
+# Function to generate a PDF report
+def generate_pdf_report(data, total_sales, average_price, output_file):
+    # Create a PDF object
+    pdf = FPDF()
+
+    # Add a page
+    pdf.add_page()
+
+    # Set title
+    pdf.set_font("Arial", size=16, style='B')
+    pdf.cell(200, 10, txt="Sales Report", ln=True, align='C')
+
+    # Add an introduction
+    pdf.ln(10)  # Line break
+    pdf.set_font("Arial", size=12)
+    pdf.multi_cell(0, 10, txt="This is the sales report generated from the sales data.\n\n")
+
+    # Table headers
+    pdf.set_font("Arial", 'B', 12)
+    pdf.cell(40, 10, 'Product', border=1, align='C')
+    pdf.cell(40, 10, 'Quantity', border=1, align='C')
+    pdf.cell(40, 10, 'Price', border=1, align='C')
+    pdf.cell(40, 10, 'Total Sales', border=1, align='C')
+    pdf.ln()
+
+    # Table content (sales data)
+    pdf.set_font("Arial", size=12)
+    for index, row in data.iterrows():
+        pdf.cell(40, 10, row['Product'], border=1, align='C')
+        pdf.cell(40, 10, str(row['Quantity']), border=1, align='C')
+        pdf.cell(40, 10, f"${row['Price']:.2f}", border=1, align='C')
+        pdf.cell(40, 10, f"${row['Total Sales']:.2f}", border=1, align='C')
+        pdf.ln()
+
+    # Add summary section
+    pdf.ln(10)
+    pdf.set_font("Arial", 'B', 12)
+    pdf.cell(200, 10, txt="Summary:", ln=True)
+    
+    pdf.set_font("Arial", size=12)
+    pdf.cell(200, 10, txt=f"Total Sales for all products: ${total_sales:.2f}")
+    pdf.ln(10)
+    pdf.cell(200, 10, txt=f"Average Price: ${average_price:.2f}")
+    
+    # Output the PDF to a file
+    pdf.output(output_file)
+
+# Main function
+def main():
+    # File path for the input CSV file
+    input_file = 'sales_data.csv'
+    
+    # Read and analyze the data
+    data = read_data(input_file)
+    analyzed_data, total_sales, average_price = analyze_data(data)
+    
+    # Generate and save the PDF report
+    output_file = 'sales_report.pdf'
+    generate_pdf_report(analyzed_data, total_sales, average_price, output_file)
+
+    print(f"Report generated successfully: {output_file}")
+
+if __name__ == "__main__":
+    main()
